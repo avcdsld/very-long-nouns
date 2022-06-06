@@ -627,10 +627,6 @@ msgstr "定足数"
 msgid "Reason (Optional)"
 msgstr "理由\"(任意)\""
 
-#: src/components/LanguageSelectionModal/index.tsx
-msgid "Select Language"
-msgstr "言語を選択"
-
 #: src/components/Bid/index.tsx
 msgid "Settle"
 msgstr "決済する"
