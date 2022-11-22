@@ -411,7 +411,7 @@ contract NounsDescriptorV2 is INounsDescriptorV2, Ownable {
     function dataURI(uint256 tokenId, INounsSeeder.Seed memory seed) public view override returns (string memory) {
         string memory nounId = tokenId.toString();
         string memory name = string(abi.encodePacked('Noun ', nounId));
-        string memory description = string(abi.encodePacked('Noun ', nounId, ' is a member of the Nouns DAO'));
+        string memory description = string(abi.encodePacked('Noun ', nounId, ' is a member of the VeryLongNouns DAO'));
 
         return genericDataURI(name, description, seed);
     }
@@ -451,13 +451,14 @@ contract NounsDescriptorV2 is INounsDescriptorV2, Ownable {
         bytes memory body = art.bodies(seed.body);
         bytes memory accessory = art.accessories(seed.accessory);
         bytes memory head = art.heads(seed.head);
-        bytes memory glasses_ = art.glasses(seed.glasses);
+        // bytes memory glasses_ = art.glasses(seed.glasses);
 
         ISVGRenderer.Part[] memory parts = new ISVGRenderer.Part[](4);
         parts[0] = ISVGRenderer.Part({ image: body, palette: _getPalette(body) });
         parts[1] = ISVGRenderer.Part({ image: accessory, palette: _getPalette(accessory) });
         parts[2] = ISVGRenderer.Part({ image: head, palette: _getPalette(head) });
-        parts[3] = ISVGRenderer.Part({ image: glasses_, palette: _getPalette(glasses_) });
+        parts[3] = ISVGRenderer.Part({ image: head, palette: _getPalette(head) });
+        // parts[3] = ISVGRenderer.Part({ image: glasses_, palette: _getPalette(glasses_) });
         return parts;
     }
 
