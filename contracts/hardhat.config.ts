@@ -1,5 +1,3 @@
-import * as dotenv from "dotenv";
-
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { HardhatUserConfig } from "hardhat/config";
 import dotenv from "dotenv";
@@ -11,19 +9,6 @@ import "hardhat-gas-reporter";
 import "./tasks";
 
 dotenv.config();
-
-// This is a sample Hardhat task. To learn how to create your own go to
-// https://hardhat.org/guides/create-task.html
-task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
-  const accounts = await hre.ethers.getSigners();
-
-  for (const account of accounts) {
-    console.log(account.address);
-  }
-});
-
-// You need to export an object to set up your config
-// Go to https://hardhat.org/config/ to learn more
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -53,14 +38,24 @@ const config: HardhatUserConfig = {
       url: `http://127.0.0.1:8545`,
       accounts: [process.env.WALLET_PRIVATE_KEY!].filter(Boolean),
       initialBaseFeePerGas: 0,
+      timeout: 10_000_000,
     },
+  },
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_API_KEY,
+  },
+  typechain: {
+    outDir: "./typechain",
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
     currency: "USD",
+    gasPrice: 50,
+    src: "contracts",
+    coinmarketcap: "7643dfc7-a58f-46af-8314-2db32bdd18ba",
   },
-  etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY,
+  mocha: {
+    timeout: 500_000_000,
   },
 };
 

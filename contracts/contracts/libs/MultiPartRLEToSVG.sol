@@ -53,10 +53,10 @@ library MultiPartRLEToSVG {
         // prettier-ignore
         return string(
             abi.encodePacked(
-                '<svg width="640" height="640" viewBox="0 0 640 640" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">',
-                '<rect width="100%" height="100%" fill="#', params.background, '" />',
+                '%253Csvg%2520width%253D%2522640%2522%2520height%253D%2522640%2522%2520viewBox%253D%25220%25200%2520640%2520640%2522%2520xmlns%253D%2522http%253A%252F%252Fwww.w3.org%252F2000%252Fsvg%2522%2520shape-rendering%253D%2522crispEdges%2522%253E',
+                '%253Crect%2520width%253D%2522100%2525%2522%2520height%253D%2522100%2525%2522%2520fill%253D%2522%2523', params.background, '%2522%2520%252F%253E',
                 _generateSVGRects(params, palettes),
-                '</svg>'
+                '%253C%252Fsvg%253E'
             )
         );
     }
@@ -132,7 +132,7 @@ library MultiPartRLEToSVG {
             chunk = string(
                 abi.encodePacked(
                     chunk,
-                    '<rect width="', buffer[i], '" height="10" x="', buffer[i + 1], '" y="', buffer[i + 2], '" fill="#', buffer[i + 3], '" />'
+                    '%253Crect%2520width%253D%2522', buffer[i], '%2522%2520height%253D%252210%2522%2520x%253D%2522', buffer[i + 1], '%2522%2520y%253D%2522', buffer[i + 2], '%2522%2520fill%253D%2522%2523', buffer[i + 3], '%2522%2520%252F%253E'
                 )
             );
         }
