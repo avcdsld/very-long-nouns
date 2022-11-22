@@ -1,5 +1,5 @@
 import { task, types } from "hardhat/config";
-import ImageData from "../../tools/output/image-data.json";
+import ImageData from "../../tools/output/image-data-org.json";
 import { dataToDescriptorInput } from "./utils";
 
 task("populate", "Populates the descriptor with color palettes and Noun parts")
@@ -45,6 +45,8 @@ task("populate", "Populates the descriptor with color palettes and Noun parts")
       const accessoriesPage = dataToDescriptorInput(
         accessories.map(({ data }) => data)
       );
+
+      console.log({ bodiesPage, headsPage, glassesPage, accessoriesPage });
 
       await descriptorContract.addManyBackgrounds(bgcolors);
       await descriptorContract.setPalette(0, `0x000000${palette.join("")}`);

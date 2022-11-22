@@ -122,7 +122,7 @@ contract SVGRenderer is ISVGRenderer {
                         buffer[cursor] = lookup[length];                                 // width
                         buffer[cursor + 1] = lookup[currentX];                           // x
                         buffer[cursor + 2] = lookup[currentY];                           // y
-                        // buffer[cursor + 3] = _getColor(palette, draw.colorIndex, cache); // color
+                        buffer[cursor + 3] = _getColor(palette, draw.colorIndex, cache); // color
 
                         cursor += 4;
 
@@ -133,20 +133,20 @@ contract SVGRenderer is ISVGRenderer {
                         }
                     }
 
-            //         currentX += length;
-            //         if (currentX == image.bounds.right) {
-            //             currentX = image.bounds.left;
-            //             currentY++;
-            //         }
+                    currentX += length;
+                    if (currentX == image.bounds.right) {
+                        currentX = image.bounds.left;
+                        currentY++;
+                    }
 
-            //         draw.length -= length;
-            //         length = _getRectLength(currentX, draw.length, image.bounds.right);
+                    draw.length -= length;
+                    length = _getRectLength(currentX, draw.length, image.bounds.right);
                 }
             }
 
-            // if (cursor != 0) {
-            //     part = string(abi.encodePacked(part, _getChunk(cursor, buffer)));
-            // }
+            if (cursor != 0) {
+                part = string(abi.encodePacked(part, _getChunk(cursor, buffer)));
+            }
             rects = string(abi.encodePacked(rects, part));
         }
         return rects;
@@ -173,15 +173,14 @@ contract SVGRenderer is ISVGRenderer {
     function _getChunk(uint256 cursor, string[64] memory buffer) private pure returns (string memory) {
         string memory chunk;
         for (uint256 i = 0; i < cursor; i += 4) {
-        //     chunk = string(
-        //         abi.encodePacked(
-        //             chunk,
-        //             '<rect width="', buffer[i], '" height="10" x="', buffer[i + 1], '" y="', buffer[i + 2], '" fill="#', buffer[i + 3], '" />'
-        //         )
-        //     );
+            chunk = string(
+                abi.encodePacked(
+                    chunk,
+                    '<rect width="', buffer[i], '" height="10" x="', buffer[i + 1], '" y="', buffer[i + 2], '" fill="#', buffer[i + 3], '" />'
+                )
+            );
         }
-        // return chunk;
-        return "";
+        return chunk;
     }
 
     /**
