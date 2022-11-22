@@ -2,7 +2,8 @@ import chai from "chai";
 import { solidity } from "ethereum-waffle";
 import { NounsDescriptorV2 } from "../typechain";
 // import ImageData from '../files/image-data-v2.json';
-import ImageData from "../../tools/output/image-data-org.json";
+// import ImageData from "../../tools/output/image-data-org.json";
+import ImageData from "../../tools/output/image-data.json";
 import { LongestPart } from "./types";
 import { deployNounsDescriptorV2, populateDescriptorV2 } from "./utils";
 import { ethers } from "hardhat";
@@ -77,19 +78,16 @@ describe("NounsDescriptorV2", function () {
       });
       console.log(tokenUri);
       const { name, description, image } = JSON.parse(
-        Buffer.from(
-          tokenUri.replace("data:application/json;base64,", ""),
-          "base64"
-        ).toString("ascii")
+        decodeURIComponent(tokenUri.replace("data:application/json,", ""))
       );
-      expect(name).to.equal(`Noun ${i}`);
+      expect(name).to.equal(`VeryLongNoun ${i}`);
       expect(description).to.equal(
-        `Noun ${i} is a member of the VeryLongNouns DAO`
+        `VeryLongNoun ${i} is a member of the Nouns DAO`
       );
       expect(image).to.not.be.undefined;
       appendFileSync(
         "parts.html",
-        Buffer.from(image.split(";base64,").pop(), "base64").toString("ascii")
+        decodeURI(image.replace("data:image/svg+xml,", ""))
       );
       if (i && i % Math.round(max / 10) === 0) {
         console.log(`${Math.round((i / max) * 100)}% complete`);

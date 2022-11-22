@@ -24,8 +24,8 @@ contract SVGRenderer is ISVGRenderer {
     uint256 private constant _INDEX_TO_BYTES3_FACTOR = 3;
 
     // prettier-ignore
-    string private constant _SVG_START_TAG = '<svg width="640" height="640" viewBox="0 0 640 640" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">';
-    string private constant _SVG_END_TAG = '</svg>';
+    string private constant _SVG_START_TAG = '%253Csvg%2520width%253D%2522640%2522%2520height%253D%2522640%2522%2520viewBox%253D%25220%25200%2520640%2520640%2522%2520xmlns%253D%2522http%253A%252F%252Fwww.w3.org%252F2000%252Fsvg%2522%2520shape-rendering%253D%2522crispEdges%2522%253E';
+    string private constant _SVG_END_TAG = '%253C%252Fsvg%253E';
 
     struct ContentBounds {
         uint8 top;
@@ -53,7 +53,7 @@ contract SVGRenderer is ISVGRenderer {
             return string(
                 abi.encodePacked(
                     _SVG_START_TAG,
-                    '<rect width="100%" height="100%" fill="#', params.background, '" />',
+                    '%253Crect%2520width%253D%2522100%2525%2522%2520height%253D%2522100%2525%2522%2520fill%253D%2522%2523', params.background, '%2522%2520%252F%253E',
                     _generateSVGRects(params),
                     _SVG_END_TAG
                 )
@@ -109,8 +109,7 @@ contract SVGRenderer is ISVGRenderer {
             uint256 currentX = image.bounds.left;
             uint256 currentY = image.bounds.top;
             uint256 cursor;
-            // string[16] memory buffer;
-            string[64] memory buffer;
+            string[16] memory buffer;
 
             string memory part;
             for (uint256 i = 0; i < image.draws.length; i++) {
@@ -126,8 +125,7 @@ contract SVGRenderer is ISVGRenderer {
 
                         cursor += 4;
 
-                        // if (cursor >= 16) {
-                        if (cursor >= 64) {
+                        if (cursor >= 16) {
                             part = string(abi.encodePacked(part, _getChunk(cursor, buffer)));
                             cursor = 0;
                         }
@@ -169,14 +167,13 @@ contract SVGRenderer is ISVGRenderer {
      * @notice Return a string that consists of all rects in the provided `buffer`.
      */
     // prettier-ignore
-    // function _getChunk(uint256 cursor, string[16] memory buffer) private pure returns (string memory) {
-    function _getChunk(uint256 cursor, string[64] memory buffer) private pure returns (string memory) {
+    function _getChunk(uint256 cursor, string[16] memory buffer) private pure returns (string memory) {
         string memory chunk;
         for (uint256 i = 0; i < cursor; i += 4) {
             chunk = string(
                 abi.encodePacked(
                     chunk,
-                    '<rect width="', buffer[i], '" height="10" x="', buffer[i + 1], '" y="', buffer[i + 2], '" fill="#', buffer[i + 3], '" />'
+                    '%253Crect%2520width%253D%2522', buffer[i], '%2522%2520height%253D%252210%2522%2520x%253D%2522', buffer[i + 1], '%2522%2520y%253D%2522', buffer[i + 2], '%2522%2520fill%253D%2522%2523', buffer[i + 3], '%2522%2520%252F%253E'
                 )
             );
         }

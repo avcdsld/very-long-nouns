@@ -13,7 +13,8 @@ import {
 } from "../typechain";
 // import ImageData from "../files/image-data-v1.json";
 // import ImageDataV2 from "../files/image-data-v2.json";
-import ImageDataV2 from "../../tools/output/image-data-org.json";
+// import ImageDataV2 from "../../tools/output/image-data-org.json";
+import ImageDataV2 from "../../tools/output/image-data.json";
 import { Block } from "@ethersproject/abstract-provider";
 import { deflateRawSync } from "zlib";
 import { chunkArray } from "../utils";
