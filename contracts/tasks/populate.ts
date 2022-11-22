@@ -1,20 +1,21 @@
 import { task, types } from "hardhat/config";
-import ImageData from "../../tools/output/image-data-org.json";
+// import ImageData from "../../tools/output/image-data-org.json";
+import ImageData from "../../tools/output/image-data.json";
 import { dataToDescriptorInput } from "./utils";
 
 task("populate", "Populates the descriptor with color palettes and Noun parts")
   .addOptionalParam(
     "nftDescriptor",
     "The `NFTDescriptorV2` contract address",
-    "0x5FbDB2315678afecb367f032d93F642f64180aa3", // Localhost
-    // "0x077d5611f1d133E8BC8E6C9C7Fd50250e1046B6b", // Goerli
+    // "0x5FbDB2315678afecb367f032d93F642f64180aa3", // Localhost
+    "0x9A7B0F6fAa103F5922d3d6828Da2D2E13E7EA6C4", // Goerli
     types.string
   )
   .addOptionalParam(
     "nounsDescriptor",
     "The `NounsDescriptorV2` contract address",
-    "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0", // Localhost
-    // "0x7b9a4447c0D4c081E86038cfa3beBBD6e287F7ba", // Goerli
+    // "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0", // Localhost
+    "0xed1b0C1151BfD7a79A28829804618D4A29a8DB64", // Goerli
     types.string
   )
   .setAction(
@@ -46,8 +47,6 @@ task("populate", "Populates the descriptor with color palettes and Noun parts")
         accessories.map(({ data }) => data)
       );
 
-      console.log({ bodiesPage, headsPage, glassesPage, accessoriesPage });
-
       await descriptorContract.addManyBackgrounds(bgcolors);
       await descriptorContract.setPalette(0, `0x000000${palette.join("")}`);
 
@@ -57,6 +56,12 @@ task("populate", "Populates the descriptor with color palettes and Noun parts")
         bodiesPage.itemCount,
         options
       );
+      // await descriptorContract.addHeads(
+      //   bodiesPage.encodedCompressed,
+      //   bodiesPage.originalLength,
+      //   bodiesPage.itemCount,
+      //   options
+      // );
       await descriptorContract.addHeads(
         headsPage.encodedCompressed,
         headsPage.originalLength,

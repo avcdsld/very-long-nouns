@@ -44,7 +44,7 @@ library NFTDescriptorV2 {
         return string(
             abi.encodePacked(
                 'data:application/json,',
-                abi.encodePacked('%7B%22name%22%3A%22', params.name, '%22%2C%20%22description%22%3A%22', params.description, '%22%2C%20%22image%22%3A%20%22', 'data%3Aimage%2Fsvg%2Bxml%2C', image, '%22%7D')
+                '%7B%22name%22%3A%22', params.name, '%22%2C%20%22description%22%3A%22', params.description, '%22%2C%20%22image%22%3A%20%22', 'data%3Aimage%2Fsvg%2Bxml%2C', image, '%22%7D'
             )
         );
     }

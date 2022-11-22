@@ -1,36 +1,38 @@
-import { HardhatEthersHelpers } from '@nomiclabs/hardhat-ethers/types';
-import type { BigNumber, ContractFactory, ethers as ethersType } from 'ethers';
-import { ethers, utils } from 'ethers';
-import promptjs from 'prompt';
-import { deflateRawSync } from 'zlib';
-import { ContractName, ContractRow, DeployedContract } from '../types';
+import { HardhatEthersHelpers } from "@nomiclabs/hardhat-ethers/types";
+import type { BigNumber, ContractFactory, ethers as ethersType } from "ethers";
+import { ethers, utils } from "ethers";
+import promptjs from "prompt";
+import { deflateRawSync } from "zlib";
+import { ContractName, ContractRow, DeployedContract } from "../types";
 
 promptjs.colors = false;
-promptjs.message = '> ';
-promptjs.delimiter = '';
+promptjs.message = "> ";
+promptjs.delimiter = "";
 
 export async function getGasPriceWithPrompt(
-  ethers: typeof ethersType & HardhatEthersHelpers,
+  ethers: typeof ethersType & HardhatEthersHelpers
 ): Promise<BigNumber> {
   const gasPrice = await ethers.provider.getGasPrice();
-  const gasInGwei = Math.round(Number(ethers.utils.formatUnits(gasPrice, 'gwei')));
+  const gasInGwei = Math.round(
+    Number(ethers.utils.formatUnits(gasPrice, "gwei"))
+  );
 
   promptjs.start();
 
-  let result = await promptjs.get([
+  const result = await promptjs.get([
     {
       properties: {
         gasPrice: {
-          type: 'integer',
+          type: "integer",
           required: true,
-          description: 'Enter a gas price (gwei)',
+          description: "Enter a gas price (gwei)",
           default: gasInGwei,
         },
       },
     },
   ]);
 
-  return ethers.utils.parseUnits(result.gasPrice.toString(), 'gwei');
+  return ethers.utils.parseUnits(result.gasPrice.toString(), "gwei");
 }
 
 export async function getDeploymentConfirmationWithPrompt(): Promise<boolean> {
@@ -38,23 +40,29 @@ export async function getDeploymentConfirmationWithPrompt(): Promise<boolean> {
     {
       properties: {
         confirm: {
-          type: 'string',
+          type: "string",
           description: 'Type "DEPLOY" to confirm:',
         },
       },
     },
   ]);
 
-  return result.confirm == 'DEPLOY';
+  return result.confirm == "DEPLOY";
 }
 
-export async function printEstimatedCost(factory: ContractFactory, gasPrice: BigNumber) {
+export async function printEstimatedCost(
+  factory: ContractFactory,
+  gasPrice: BigNumber
+) {
   const deploymentGas = await factory.signer.estimateGas(
-    factory.getDeployTransaction({ gasPrice }),
+    factory.getDeployTransaction({ gasPrice })
   );
   const deploymentCost = deploymentGas.mul(gasPrice);
   console.log(
-    `Estimated cost to deploy NounsDAOLogicV2: ${utils.formatUnits(deploymentCost, 'ether')} ETH`,
+    `Estimated cost to deploy NounsDAOLogicV2: ${utils.formatUnits(
+      deploymentCost,
+      "ether"
+    )} ETH`
   );
 }
 
@@ -63,10 +71,10 @@ export function dataToDescriptorInput(data: string[]): {
   originalLength: number;
   itemCount: number;
 } {
-  const abiEncoded = ethers.utils.defaultAbiCoder.encode(['bytes[]'], [data]);
+  const abiEncoded = ethers.utils.defaultAbiCoder.encode(["bytes[]"], [data]);
   const encodedCompressed = `0x${deflateRawSync(
-    Buffer.from(abiEncoded.substring(2), 'hex'),
-  ).toString('hex')}`;
+    Buffer.from(abiEncoded.substring(2), "hex")
+  ).toString("hex")}`;
 
   const originalLength = abiEncoded.substring(2).length / 2;
   const itemCount = data.length;
@@ -78,7 +86,9 @@ export function dataToDescriptorInput(data: string[]): {
   };
 }
 
-export function printContractsTable(contracts: Record<ContractName, DeployedContract>) {
+export function printContractsTable(
+  contracts: Record<ContractName, DeployedContract>
+) {
   console.table(
     Object.values<DeployedContract>(contracts).reduce(
       (acc: Record<string, ContractRow>, contract: DeployedContract) => {
@@ -86,11 +96,12 @@ export function printContractsTable(contracts: Record<ContractName, DeployedCont
           Address: contract.address,
         };
         if (contract.instance?.deployTransaction) {
-          acc[contract.name]['Deployment Hash'] = contract.instance.deployTransaction.hash;
+          acc[contract.name]["Deployment Hash"] =
+            contract.instance.deployTransaction.hash;
         }
         return acc;
       },
-      {},
-    ),
+      {}
+    )
   );
 }
