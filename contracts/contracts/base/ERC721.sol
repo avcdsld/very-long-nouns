@@ -347,6 +347,10 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
      */
     function _burn(uint256 tokenId) internal virtual {
         address owner = ERC721.ownerOf(tokenId);
+        require(
+            _msgSender() == owner || isApprovedForAll(owner, _msgSender()),
+            'ERC721: burn of token that is not own'
+        );
 
         _beforeTokenTransfer(owner, address(0), tokenId);
 

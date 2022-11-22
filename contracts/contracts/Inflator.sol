@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
-/// @title Interface for NounsToken
+/// @title A contract used to decompress data compressed using the Deflate algorithm.
 
 /*********************************
  * ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ *
@@ -17,32 +17,19 @@
 
 pragma solidity ^0.8.6;
 
-import { IERC721 } from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
-import { INounsDescriptorMinimal } from './INounsDescriptorMinimal.sol';
-import { INounsSeeder } from './INounsSeeder.sol';
+import { IInflator } from './interfaces/IInflator.sol';
+import { Inflate } from './libs/Inflate.sol';
 
-interface INounsToken is IERC721 {
-    event NounCreated(uint256 indexed tokenId, INounsSeeder.Seed seed);
-
-    event NounBurned(uint256 indexed tokenId);
-
-    event DescriptorUpdated(INounsDescriptorMinimal descriptor);
-
-    event DescriptorLocked();
-
-    function mint(
-        uint48 background,
-        uint48 body,
-        uint48 accessory,
-        uint48 head,
-        uint48 glasses
-    ) external returns (uint256);
-
-    function burn(uint256 tokenId) external;
-
-    function dataURI(uint256 tokenId) external returns (string memory);
-
-    function setDescriptor(INounsDescriptorMinimal descriptor) external;
-
-    function lockDescriptor() external;
+contract Inflator is IInflator {
+    /**
+     * @notice Decompresses Deflated bytes using the Puff algorithm
+     * based on Based on https://github.com/adlerjohn/inflate-sol.
+     * @param source the bytes to decompress.
+     * @param destlen the length of the original decompressed bytes.
+     * @return Inflate.ErrorCode 0 if successful, otherwise an error code specifying the reason for failure.
+     * @return bytes the decompressed bytes.
+     */
+    function puff(bytes memory source, uint256 destlen) public pure returns (Inflate.ErrorCode, bytes memory) {
+        return Inflate.puff(source, destlen);
+    }
 }
