@@ -23,6 +23,7 @@
   width: 50%;
   background: rgba(255, 255, 255, 0.3);
   border: none;
+  margin-bottom: 12px;
 }
 
 .displayNounFooter button:hover,
@@ -39,7 +40,7 @@
   margin-bottom: 1rem;
 }
 
-@media (max-width: 992px) {
+@media (max-width: 688px) {
   .modal {
     width: 80% !important;
     left: 10% !important;

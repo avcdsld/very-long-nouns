@@ -8,14 +8,14 @@ task("populate", "Populates the descriptor with color palettes and Noun parts")
     "nftDescriptor",
     "The `NFTDescriptorV2` contract address",
     // "0x5FbDB2315678afecb367f032d93F642f64180aa3", // Localhost
-    "0x9A7B0F6fAa103F5922d3d6828Da2D2E13E7EA6C4", // Goerli
+    "0x7cE7bDAF83be4847Bee50049fce8E235C2969bDa", // Goerli
     types.string
   )
   .addOptionalParam(
     "nounsDescriptor",
     "The `NounsDescriptorV2` contract address",
     // "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0", // Localhost
-    "0xed1b0C1151BfD7a79A28829804618D4A29a8DB64", // Goerli
+    "0x466FEF8473642479a42D117Ae45743dF20F6818B", // Goerli
     types.string
   )
   .setAction(
@@ -56,12 +56,6 @@ task("populate", "Populates the descriptor with color palettes and Noun parts")
         bodiesPage.itemCount,
         options
       );
-      // await descriptorContract.addHeads(
-      //   bodiesPage.encodedCompressed,
-      //   bodiesPage.originalLength,
-      //   bodiesPage.itemCount,
-      //   options
-      // );
       await descriptorContract.addHeads(
         headsPage.encodedCompressed,
         headsPage.originalLength,

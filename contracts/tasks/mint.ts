@@ -6,7 +6,7 @@ task("mint", "Mints a Noun")
     "nounsToken",
     "The `NounsToken` contract address",
     // "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707", // Localhost
-    "0x7C86748c2f9B694bE78C8BA9a4FD2335F5FD356c", // Goerli
+    "0x154fc3f3fe9BF6C70d6061E6998c0570b0619771", // Goerli
     types.string
   )
   .setAction(async ({ nounsToken }, { ethers }) => {
@@ -22,11 +22,11 @@ task("mint", "Mints a Noun")
     const receipt = await (
       await nftContract.mint(background, body, accessory, head, glasses)
     ).wait();
-    console.log(receipt);
+    console.log(receipt.status);
     const nounCreated = receipt.events?.[1];
     const { tokenId } = nounCreated?.args as Result;
 
     console.log(`Noun minted with ID: ${tokenId.toString()}.`);
 
-    console.log(await nftContract.dataURI(0));
+    // console.log(await nftContract.dataURI(0));
   });

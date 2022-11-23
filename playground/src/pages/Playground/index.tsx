@@ -53,6 +53,7 @@ const traitKeyToLocalizedTraitKeyFirstLetterCapitalized = (
 
 const Playground: React.FC = () => {
   const [nounSvgs, setNounSvgs] = useState<string[]>();
+  const [nounSeeds, setNounSeeds] = useState<{ [key: string]: number }[]>();
   const [traits, setTraits] = useState<Trait[]>();
   const [modSeed, setModSeed] = useState<{ [key: string]: number }>();
   const [initLoad, setInitLoad] = useState<boolean>(true);
@@ -76,6 +77,9 @@ const Playground: React.FC = () => {
         svg = svg.replaceAll(`viewBox="0 0 320 320"`, `viewBox="0 0 640 640"`);
         setNounSvgs((prev) => {
           return prev ? [svg, ...prev] : [svg];
+        });
+        setNounSeeds((prev) => {
+          return prev ? [seed, ...prev] : [seed];
         });
       }
     },
@@ -135,14 +139,18 @@ const Playground: React.FC = () => {
 
   return (
     <>
-      {displayNoun && indexOfNounToDisplay !== undefined && nounSvgs && (
-        <NounModal
-          onDismiss={() => {
-            setDisplayNoun(false);
-          }}
-          svg={nounSvgs[indexOfNounToDisplay]}
-        />
-      )}
+      {displayNoun &&
+        indexOfNounToDisplay !== undefined &&
+        nounSvgs &&
+        nounSeeds && (
+          <NounModal
+            onDismiss={() => {
+              setDisplayNoun(false);
+            }}
+            svg={nounSvgs[indexOfNounToDisplay]}
+            seed={nounSeeds[indexOfNounToDisplay]}
+          />
+        )}
 
       <Container fluid="lg">
         <Row>
@@ -167,7 +175,7 @@ const Playground: React.FC = () => {
               {traits &&
                 traits.map((trait, index) => {
                   return (
-                    <Col lg={12} xs={6}>
+                    <Col lg={12} xs={6} key={index}>
                       <Form className={classes.traitForm}>
                         <FloatingLabel
                           controlId="floatingSelect"
