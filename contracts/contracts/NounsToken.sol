@@ -45,6 +45,9 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
     // The noun seeds
     mapping(uint256 => INounsSeeder.Seed) public seeds;
 
+    // Minted noun seeds (The key is the value of seed serialized to uint256)
+    mapping(uint256 => bool) public existingSeeds;
+
     // The internal noun ID tracker
     uint256 private _currentNounId;
 
@@ -85,6 +88,17 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
         return super.isApprovedForAll(owner, operator);
     }
 
+    function isMintedSeed(
+        uint48 background,
+        uint48 body,
+        uint48 accessory,
+        uint48 head,
+        uint48 glasses
+    ) public view returns (bool) {
+        uint256 seedKey = (uint256(background) << 32) + (uint256(body) << 24) + (uint256(accessory) << 16) + (uint256(head) << 8) + (uint256(glasses));
+        return existingSeeds[seedKey];
+    }
+
     /**
      * @notice Mint a noun.
      */
@@ -95,7 +109,10 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
         uint48 head,
         uint48 glasses
     ) public override returns (uint256) {
-        // TODO: validation
+        uint256 seedKey = (uint256(background) << 32) + (uint256(body) << 24) + (uint256(accessory) << 16) + (uint256(head) << 8) + (uint256(glasses));
+        require(!existingSeeds[seedKey], "That seed has already been used");
+        existingSeeds[seedKey] = true;
+
         INounsSeeder.Seed memory seed = INounsSeeder.Seed(
             background,
             body,
@@ -138,7 +155,6 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
      */
     function setDescriptor(INounsDescriptorMinimal _descriptor) external override onlyOwner whenDescriptorNotLocked {
         descriptor = _descriptor;
-
         emit DescriptorUpdated(_descriptor);
     }
 
@@ -148,7 +164,6 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
      */
     function lockDescriptor() external override onlyOwner whenDescriptorNotLocked {
         isDescriptorLocked = true;
-
         emit DescriptorLocked();
     }
 
@@ -156,12 +171,9 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
      * @notice Mint a Noun with `nounId` to the provided `to` address.
      */
     function _mintTo(address to, uint256 nounId, INounsSeeder.Seed memory seed) internal returns (uint256) {
-        // TODO: duplication check
         seeds[nounId] = seed;
-
         _mint(owner(), to, nounId);
         emit NounCreated(nounId, seed);
-
         return nounId;
     }
 }
