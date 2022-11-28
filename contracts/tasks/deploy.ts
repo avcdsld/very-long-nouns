@@ -1,5 +1,5 @@
 import { ContractDeployment, ContractName, DeployedContract } from "./types";
-import { task } from "hardhat/config";
+import { task, types } from "hardhat/config";
 import promptjs from "prompt";
 
 promptjs.colors = false;
@@ -12,8 +12,15 @@ task(
   "deploy",
   "Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsToken"
 )
+  .addOptionalParam(
+    "originalNounsToken",
+    "The original `NounsToken` contract address",
+    // "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707", // Localhost // TODO: change
+    "0x154fc3f3fe9BF6C70d6061E6998c0570b0619771", // Goerli
+    types.string
+  )
   .addFlag("autoDeploy", "Deploy all contracts without user interaction")
-  .setAction(async (args, { ethers }) => {
+  .setAction(async ({ autoDeploy, originalNounsToken }, { ethers }) => {
     const [deployer] = await ethers.getSigners();
 
     const nonce = await deployer.getTransactionCount();
@@ -42,13 +49,13 @@ task(
         ],
       },
       NounsToken: {
-        args: [() => deployment.NounsDescriptorV2.address],
+        args: [() => deployment.NounsDescriptorV2.address, originalNounsToken],
       },
     };
 
     for (const [name, contract] of Object.entries(contracts)) {
       let gasPrice = await ethers.provider.getGasPrice();
-      if (!args.autoDeploy) {
+      if (!autoDeploy) {
         const gasInGwei = Math.round(
           Number(ethers.utils.formatUnits(gasPrice, "gwei"))
         );
@@ -92,7 +99,7 @@ task(
         )} ETH`
       );
 
-      if (!args.autoDeploy) {
+      if (!autoDeploy) {
         const result = await promptjs.get([
           {
             properties: {

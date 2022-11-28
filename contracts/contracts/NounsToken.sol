@@ -35,7 +35,15 @@ import { INounsToken } from './interfaces/INounsToken.sol';
 import { ERC721 } from './base/ERC721.sol';
 import { IERC721 } from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 
+interface IOriginalNounsToken {
+    function ownerOf(uint256) external view returns (address);
+    function seeds(uint256) external view returns (INounsSeeder.Seed memory);
+}
+
 contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
+    // The original NounsToken
+    IOriginalNounsToken public originalNounsToken;
+
     // The Nouns token URI descriptor
     INounsDescriptorMinimal public descriptor;
 
@@ -52,7 +60,7 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
     uint256 private _currentNounId;
 
     // IPFS content hash of contract-level metadata
-    string private _contractURIHash = 'QmZi1n79FqWt2tTLwCqiy6nLM6xLGRsEPQ5JmReJQKNNzX';
+    string private _contractURIHash = 'QmZi1n79FqWt2tTLwCqiy6nLM6xLGRsEPQ5JmReJQKNNzX'; // TODO:
 
     /**
      * @notice Require that the descriptor has not been locked.
@@ -62,8 +70,13 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
         _;
     }
 
-    constructor(INounsDescriptorMinimal _descriptor) ERC721('VeryLongNounsToken', 'VLNOUN') {
+    constructor(
+        INounsDescriptorMinimal _descriptor,
+        IOriginalNounsToken _originalNounsToken
+    ) ERC721('VeryLongNounsToken', 'VLNOUN') {
         descriptor = _descriptor;
+        originalNounsToken = _originalNounsToken;
+        _currentNounId = 10_000_000;
     }
 
     /**
@@ -97,6 +110,20 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
     ) public view returns (bool) {
         uint256 seedKey = (uint256(background) << 32) + (uint256(body) << 24) + (uint256(accessory) << 16) + (uint256(head) << 8) + (uint256(glasses));
         return existingSeeds[seedKey];
+    }
+
+    /**
+     * @notice Mint a noun for original Noun owners.
+     */
+    function mintForNounOwner(uint256 tokenId) public returns (uint256) {
+        require(_msgSender() == originalNounsToken.ownerOf(tokenId), "Invalid owner");
+
+        INounsSeeder.Seed memory seed = originalNounsToken.seeds(tokenId);
+        uint256 seedKey = (uint256(seed.background) << 32) + (uint256(seed.body) << 24) + (uint256(seed.accessory) << 16) + (uint256(seed.head) << 8) + (uint256(seed.glasses));
+        // require(!existingSeeds[seedKey], "That seed has already been used");
+        existingSeeds[seedKey] = true;
+
+        return _mintTo(_msgSender(), tokenId, seed);
     }
 
     /**
@@ -165,6 +192,13 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
     function lockDescriptor() external override onlyOwner whenDescriptorNotLocked {
         isDescriptorLocked = true;
         emit DescriptorLocked();
+    }
+
+    /**
+     * @notice Returns whether `tokenId` exists.
+     */
+    function exists(uint256 tokenId) external override view returns (bool) {
+        return _exists(tokenId);
     }
 
     /**

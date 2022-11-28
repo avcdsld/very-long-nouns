@@ -30,6 +30,8 @@ interface INounsToken is IERC721 {
 
     event DescriptorLocked();
 
+    function mintForNounOwner(uint256 tokenId) external returns (uint256);
+
     function mint(
         uint48 background,
         uint48 body,
@@ -45,4 +47,6 @@ interface INounsToken is IERC721 {
     function setDescriptor(INounsDescriptorMinimal descriptor) external;
 
     function lockDescriptor() external;
+
+    function exists(uint256 tokenId) external view returns (bool);
 }

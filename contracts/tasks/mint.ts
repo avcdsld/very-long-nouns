@@ -6,7 +6,7 @@ task("mint", "Mints a Noun")
     "nounsToken",
     "The `NounsToken` contract address",
     // "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707", // Localhost
-    "0x154fc3f3fe9BF6C70d6061E6998c0570b0619771", // Goerli
+    "0x6D124Bcc1b7C5ea58F3774D3bBE9FaEecAd019D8", // Goerli
     types.string
   )
   .setAction(async ({ nounsToken }, { ethers }) => {
