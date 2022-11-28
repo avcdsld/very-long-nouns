@@ -13,10 +13,12 @@ import {
   ImageData,
   getNounData,
   getRandomNounSeed,
+  NounSeed,
 } from "../../utils/assetsUtil";
 import { buildSVG, PNGCollectionEncoder } from "@nouns/sdk";
 import Noun from "../../components/Noun";
 import NounModal from "./NounModal";
+import { connect, getOwnNounsSeedsInfo } from "../../utils/web3ModalUtil";
 
 interface Trait {
   title: string;
@@ -54,6 +56,7 @@ const traitKeyToLocalizedTraitKeyFirstLetterCapitalized = (
 const Playground: React.FC = () => {
   const [nounSvgs, setNounSvgs] = useState<string[]>();
   const [nounSeeds, setNounSeeds] = useState<{ [key: string]: number }[]>();
+  const [nounTokenIds, setNounTokenIds] = useState<number[]>();
   const [traits, setTraits] = useState<Trait[]>();
   const [modSeed, setModSeed] = useState<{ [key: string]: number }>();
   const [initLoad, setInitLoad] = useState<boolean>(true);
@@ -65,9 +68,20 @@ const Playground: React.FC = () => {
   const [pendingTrait] = useState<PendingCustomTrait>();
 
   const generateNounSvg = React.useCallback(
-    (amount: number = 1) => {
+    (
+      amount: number = 1,
+      seedsInfo?: {
+        seed: NounSeed;
+        tokenId: number;
+      }[]
+    ) => {
       for (let i = 0; i < amount; i++) {
-        const seed = { ...getRandomNounSeed(), ...modSeed };
+        const seed = seedsInfo
+          ? { ...seedsInfo[i].seed, ...modSeed }
+          : {
+              ...getRandomNounSeed(),
+              ...modSeed,
+            };
         const { parts, background } = getNounData(seed);
         let svg = buildSVG(parts, encoder.data.palette, background);
         svg = svg.replaceAll(
@@ -80,6 +94,10 @@ const Playground: React.FC = () => {
         });
         setNounSeeds((prev) => {
           return prev ? [seed, ...prev] : [seed];
+        });
+        const tokenId = seedsInfo ? seedsInfo[i].tokenId : -1;
+        setNounTokenIds((prev) => {
+          return prev ? [tokenId, ...prev] : [tokenId];
         });
       }
     },
@@ -142,13 +160,15 @@ const Playground: React.FC = () => {
       {displayNoun &&
         indexOfNounToDisplay !== undefined &&
         nounSvgs &&
-        nounSeeds && (
+        nounSeeds &&
+        nounTokenIds && (
           <NounModal
             onDismiss={() => {
               setDisplayNoun(false);
             }}
             svg={nounSvgs[indexOfNounToDisplay]}
             seed={nounSeeds[indexOfNounToDisplay]}
+            tokenId={nounTokenIds[indexOfNounToDisplay]}
           />
         )}
 
@@ -168,10 +188,24 @@ const Playground: React.FC = () => {
                 }}
                 className={classes.primaryBtn}
               >
-                Generate Nouns
+                Random Nouns
               </Button>
             </Col>
-            <Row>
+            <Col lg={12}>
+              <Button
+                onClick={async () => {
+                  const provider = await connect();
+                  const seedsInfo = await getOwnNounsSeedsInfo(provider);
+                  if (seedsInfo.length > 0) {
+                    generateNounSvg(seedsInfo.length, seedsInfo);
+                  }
+                }}
+                className={classes.primaryBtn}
+              >
+                Your Own Nouns
+              </Button>
+            </Col>
+            {/* <Row>
               {traits &&
                 traits.map((trait, index) => {
                   return (
@@ -208,7 +242,7 @@ const Playground: React.FC = () => {
                     </Col>
                   );
                 })}
-            </Row>
+            </Row> */}
           </Col>
           <Col lg={9}>
             <Row>
