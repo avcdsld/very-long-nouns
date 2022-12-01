@@ -7,15 +7,15 @@ task("populate", "Populates the descriptor with color palettes and Noun parts")
   .addOptionalParam(
     "nftDescriptor",
     "The `NFTDescriptorV2` contract address",
-    "0x5FbDB2315678afecb367f032d93F642f64180aa3", // Localhost
-    // "0x727Fc904d40D549e78c37f20ea625E491F2D694b", // Goerli
+    // "0x5FbDB2315678afecb367f032d93F642f64180aa3", // Localhost
+    "0x5d6e40dc353E4F8E093Cd90ba18d45a026F3C833", // Goerli
     types.string
   )
   .addOptionalParam(
     "nounsDescriptor",
     "The `NounsDescriptorV2` contract address",
     // "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0", // Localhost
-    "0xf43EcBf8F0fDfB16946d3Fbb5C118fCaE8DA7d5f", // Goerli
+    "0xDd058D936E3369e7D5a856db18dB31bF2aBD27E0", // Goerli
     types.string
   )
   .setAction(

@@ -91,7 +91,7 @@ const NounModal: React.FC<{
                   mintNoun(seed, tokenId);
                 }}
               >
-                Mint
+                Mint for 0.005 ETH
               </Button>
             )}
           </div>

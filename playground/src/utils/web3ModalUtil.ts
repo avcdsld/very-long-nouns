@@ -78,10 +78,12 @@ export const originalNftContractAbi = [
     "function seeds(uint256) view returns ((uint48 background, uint48 body, uint48 accessory, uint48 head, uint48 glasses) seed)"
 ];
 
-export const nftContractAddress = "0x6D124Bcc1b7C5ea58F3774D3bBE9FaEecAd019D8"; // Goerli
+export const nftContractAddress = "0xB1E6C10Be0aF4BEB0b4191A1F4fA5b98bb492dd8"; // Goerli
 export const nftContractAbi = [
-    "function mintForNounOwner(uint256) returns (uint256)",
-    "function mint(uint48,uint48,uint48,uint48,uint48) returns (uint256)",
+    "function priceForNounOwner() view returns (uint256)",
+    "function price() view returns (uint256)",
+    "function mintForNounOwner(uint256) payable returns (uint256)",
+    "function mint(uint48,uint48,uint48,uint48,uint48) payable returns (uint256)",
     "function isMintedSeed(uint48,uint48,uint48,uint48,uint48) view returns (bool)",
     "function exists(uint256) view returns (bool)",
 ];
@@ -107,7 +109,8 @@ export const mint = async (
             return;
         }
 
-        await nftContract.mintForNounOwner(tokenId);
+        const value = nftContract.priceForNounOwner();
+        await nftContract.mintForNounOwner(tokenId, { value });
         alert(
             "Transaction has been sent. Please check your OpenSea account page after a while."
         );
@@ -127,12 +130,14 @@ export const mint = async (
             return;
         }
 
+        const value = nftContract.price();
         await nftContract.mint(
             seed.background,
             seed.body,
             seed.accessory,
             seed.head,
-            seed.glasses
+            seed.glasses,
+            { value },
         );
         alert(
             "Transaction has been sent. Please check your OpenSea account page after a while."
