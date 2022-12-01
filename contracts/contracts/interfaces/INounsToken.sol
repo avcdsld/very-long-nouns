@@ -30,7 +30,7 @@ interface INounsToken is IERC721 {
 
     event DescriptorLocked();
 
-    function mintForNounOwner(uint256 tokenId) external returns (uint256);
+    function mintForNounOwner(uint256 tokenId) external payable returns (uint256);
 
     function mint(
         uint48 background,
@@ -38,7 +38,7 @@ interface INounsToken is IERC721 {
         uint48 accessory,
         uint48 head,
         uint48 glasses
-    ) external returns (uint256);
+    ) external payable returns (uint256);
 
     function burn(uint256 tokenId) external;
 

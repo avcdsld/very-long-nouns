@@ -56,6 +56,10 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
     // Minted noun seeds (The key is the value of seed serialized to uint256)
     mapping(uint256 => bool) public existingSeeds;
 
+    // Mint price
+    uint256 public priceForNounOwner = 0.005 ether;
+    uint256 public price = 0.005 ether;
+
     // The internal noun ID tracker
     uint256 private _currentNounId;
 
@@ -95,6 +99,31 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
     }
 
     /**
+     * @notice Set the priceForNounOwner.
+     * @dev Only callable by the owner.
+     */
+    function setPriceForNounOwner(uint256 _priceForNounOwner) external onlyOwner {
+        priceForNounOwner = _priceForNounOwner;
+    }
+
+    /**
+     * @notice Set the price.
+     * @dev Only callable by the owner.
+     */
+    function setPrice(uint256 _price) external onlyOwner {
+        price = _price;
+    }
+
+    /**
+     * @notice Withdraw the sales.
+     * @dev Only callable by the owner.
+     */
+    function withdraw(address payable to) external onlyOwner {
+        uint256 balance = address(this).balance;
+        to.transfer(balance);
+    }
+
+    /**
      * @notice Override isApprovedForAll to whitelist user's OpenSea proxy accounts to enable gas-less listings.
      */
     function isApprovedForAll(address owner, address operator) public view override(IERC721, ERC721) returns (bool) {
@@ -115,7 +144,8 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
     /**
      * @notice Mint a noun for original Noun owners.
      */
-    function mintForNounOwner(uint256 tokenId) public returns (uint256) {
+    function mintForNounOwner(uint256 tokenId) public payable returns (uint256) {
+        require(priceForNounOwner <= msg.value, "Ether value sent is not correct");
         require(_msgSender() == originalNounsToken.ownerOf(tokenId), "Invalid owner");
 
         INounsSeeder.Seed memory seed = originalNounsToken.seeds(tokenId);
@@ -135,7 +165,8 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
         uint48 accessory,
         uint48 head,
         uint48 glasses
-    ) public override returns (uint256) {
+    ) public payable override returns (uint256) {
+        require(price <= msg.value, "Ether value sent is not correct");
         uint256 seedKey = (uint256(background) << 32) + (uint256(body) << 24) + (uint256(accessory) << 16) + (uint256(head) << 8) + (uint256(glasses));
         require(!existingSeeds[seedKey], "That seed has already been used");
         existingSeeds[seedKey] = true;
