@@ -8,14 +8,14 @@ task("populate", "Populates the descriptor with color palettes and Noun parts")
     "nftDescriptor",
     "The `NFTDescriptorV2` contract address",
     // "0x5FbDB2315678afecb367f032d93F642f64180aa3", // Localhost
-    "0x5d6e40dc353E4F8E093Cd90ba18d45a026F3C833", // Goerli
+    "0x4863b68a2350e3a34e415801B1046B15CF511452", // Goerli
     types.string
   )
   .addOptionalParam(
     "nounsDescriptor",
     "The `NounsDescriptorV2` contract address",
     // "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0", // Localhost
-    "0xDd058D936E3369e7D5a856db18dB31bF2aBD27E0", // Goerli
+    "0xCa6c76F4aD37b82A56d55F083c2A1F1CCAeDDD56", // Goerli
     types.string
   )
   .setAction(
@@ -35,7 +35,7 @@ task("populate", "Populates the descriptor with color palettes and Noun parts")
       const descriptorContract = descriptorFactory.attach(nounsDescriptor);
 
       const { palette, images } = ImageData;
-      const bgcolors = ["d5d7e1", "e1d7d5"]; // TODO:
+      const bgcolors = ["d5d7e1", "e1d7d5", "e1d7d5"]; // TODO:
       const { bodies, accessories, heads, glasses } = images;
 
       const bodiesPage = dataToDescriptorInput(bodies.map(({ data }) => data));

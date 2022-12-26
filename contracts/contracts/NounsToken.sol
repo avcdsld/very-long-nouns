@@ -34,6 +34,7 @@ import { INounsSeeder } from './interfaces/INounsSeeder.sol';
 import { INounsToken } from './interfaces/INounsToken.sol';
 import { ERC721 } from './base/ERC721.sol';
 import { IERC721 } from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 interface IOriginalNounsToken {
     function ownerOf(uint256) external view returns (address);
@@ -56,6 +57,9 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
 
     // Whether the descriptor can be updated
     bool public isDescriptorLocked;
+
+    // Public minting status
+    bool public isPublicMintPaused = true;
 
     // The noun seeds
     mapping(uint256 => INounsSeeder.Seed) public seeds;
@@ -80,11 +84,22 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
     // IPFS content hash of contract-level metadata
     string private _contractURIHash = 'QmZi1n79FqWt2tTLwCqiy6nLM6xLGRsEPQ5JmReJQKNNzX'; // TODO:
 
+    // The signer address for pre minting
+    address public preMintSigner;
+
     /**
      * @notice Require that the descriptor has not been locked.
      */
     modifier whenDescriptorNotLocked() {
         require(!isDescriptorLocked, 'Descriptor is locked');
+        _;
+    }
+
+    /**
+     * @notice Require that public minting has not been paused.
+     */
+    modifier whenPublicMintNotPaused() {
+        require(!isPublicMintPaused, 'Public minting is paused');
         _;
     }
 
@@ -144,6 +159,14 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
     }
 
     /**
+     * @notice Set the signer address for pre minting.
+     * @dev Only callable by the owner.
+     */
+    function setPreMintSigner(address signer) external onlyOwner {
+        preMintSigner = signer;
+    }
+
+    /**
      * @notice Withdraw the sales.
      * @dev Only callable by the owner.
      */
@@ -186,6 +209,40 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
     }
 
     /**
+     * @notice Pre Mint a noun.
+     */
+    function preMint(
+        uint48 background,
+        uint48 body,
+        uint48 accessory,
+        uint48 head,
+        uint48 glasses,
+        address to,
+        uint256 expiredAt,
+        bytes memory signature
+    ) public payable override returns (uint256) {
+        require(price <= msg.value, "Ether value sent is not correct");
+        require(_currentNounId < currentGenerationNounIdLimit, "Can't mint any more");
+        require(background >= 2, "Invalid background");
+        uint256 seedKey = (uint256(background) << 32) + (uint256(body) << 24) + (uint256(accessory) << 16) + (uint256(head) << 8) + (uint256(glasses));
+        require(!existingSeedWithGenerations[seedKey].exist, "That seed has already been used");
+        existingSeedWithGenerations[seedKey] = SeedExistingAndGeneration(true, currentGeneration);
+
+        require(expiredAt > block.timestamp, "Expired signature");
+        bytes32 hash = keccak256(abi.encodePacked(to, expiredAt));
+        require(hash.toEthSignedMessageHash().recover(signature) == preMintSigner, "Invalid signature");
+
+        INounsSeeder.Seed memory seed = INounsSeeder.Seed(
+            background,
+            body,
+            accessory,
+            head,
+            glasses
+        );
+        return _mintTo(to, _currentNounId++, seed);
+    }
+
+    /**
      * @notice Mint a noun.
      */
     function mint(
@@ -194,7 +251,7 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
         uint48 accessory,
         uint48 head,
         uint48 glasses
-    ) public payable override returns (uint256) {
+    ) public payable override whenPublicMintNotPaused returns (uint256) {
         require(price <= msg.value, "Ether value sent is not correct");
         require(_currentNounId < currentGenerationNounIdLimit, "Can't mint any more");
         require(background >= 2, "Invalid background");
@@ -254,6 +311,13 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
     function lockDescriptor() external override onlyOwner whenDescriptorNotLocked {
         isDescriptorLocked = true;
         emit DescriptorLocked();
+    }
+
+    /**
+     * @notice Set isPublicMintPaused.
+     */
+    function setPublicMintPaused(bool paused) external onlyOwner {
+        isPublicMintPaused = paused;
     }
 
     /**

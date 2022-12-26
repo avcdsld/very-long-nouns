@@ -96,7 +96,8 @@ export const deployNounsDescriptorV2 = async (
 export const populateDescriptorV2 = async (
   nounsDescriptor: NounsDescriptorV2
 ): Promise<void> => {
-  const { bgcolors, palette, images } = ImageDataV2;
+  const { palette, images } = ImageDataV2;
+  const bgcolors = ["d5d7e1", "e1d7d5", "e1d7d5"]; // TODO:
   const { bodies, accessories, heads, glasses } = images;
 
   const {

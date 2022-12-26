@@ -32,6 +32,17 @@ interface INounsToken is IERC721 {
 
     function mintForNounOwner(uint256 tokenId) external payable returns (uint256);
 
+    function preMint(
+        uint48 background,
+        uint48 body,
+        uint48 accessory,
+        uint48 head,
+        uint48 glasses,
+        address to,
+        uint256 expiredAt,
+        bytes memory signature
+    ) external payable returns (uint256);
+
     function mint(
         uint48 background,
         uint48 body,
