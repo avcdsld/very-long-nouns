@@ -41,6 +41,13 @@ interface IOriginalNounsToken {
 }
 
 contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
+    struct SeedExistingAndGeneration {
+        bool exist;
+        uint128 generation;
+    }
+
+    using ECDSA for bytes32;
+
     // The original NounsToken
     IOriginalNounsToken public originalNounsToken;
 
@@ -53,15 +60,22 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
     // The noun seeds
     mapping(uint256 => INounsSeeder.Seed) public seeds;
 
-    // Minted noun seeds (The key is the value of seed serialized to uint256)
-    mapping(uint256 => bool) public existingSeeds;
+    // Minted noun seeds (The key is the value of seed serialized to uint256).
+    // Generation should be one less than the actual value.
+    mapping(uint256 => SeedExistingAndGeneration) public existingSeedWithGenerations;
 
     // Mint price
     uint256 public priceForNounOwner = 0.005 ether;
     uint256 public price = 0.005 ether;
 
+    // The current generation number
+    uint128 private currentGeneration;
+
+    // The Noun ID limit for the current generation
+    uint256 private currentGenerationNounIdLimit = 10_001_000;
+
     // The internal noun ID tracker
-    uint256 private _currentNounId;
+    uint256 private _currentNounId = 10_000_000;
 
     // IPFS content hash of contract-level metadata
     string private _contractURIHash = 'QmZi1n79FqWt2tTLwCqiy6nLM6xLGRsEPQ5JmReJQKNNzX'; // TODO:
@@ -80,7 +94,6 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
     ) ERC721('VeryLongNounsToken', 'VLNOUN') {
         descriptor = _descriptor;
         originalNounsToken = _originalNounsToken;
-        _currentNounId = 10_000_000;
     }
 
     /**
@@ -115,6 +128,22 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
     }
 
     /**
+     * @notice Increment the generation.
+     * @dev Only callable by the owner.
+     */
+    function incrementGeneration(uint256 nextNounIdLimit) external onlyOwner {
+        require(nextNounIdLimit > _currentNounId, "Invalid limit");
+        currentGenerationNounIdLimit = nextNounIdLimit;
+        currentGeneration++;
+    }
+
+    function getGeneration(uint256 tokenId) public view returns (uint128) {
+        INounsSeeder.Seed memory seed = seeds[tokenId];
+        uint256 seedKey = (uint256(seed.background) << 32) + (uint256(seed.body) << 24) + (uint256(seed.accessory) << 16) + (uint256(seed.head) << 8) + (uint256(seed.glasses));
+        return existingSeedWithGenerations[seedKey].generation;
+    }
+
+    /**
      * @notice Withdraw the sales.
      * @dev Only callable by the owner.
      */
@@ -138,7 +167,7 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
         uint48 glasses
     ) public view returns (bool) {
         uint256 seedKey = (uint256(background) << 32) + (uint256(body) << 24) + (uint256(accessory) << 16) + (uint256(head) << 8) + (uint256(glasses));
-        return existingSeeds[seedKey];
+        return existingSeedWithGenerations[seedKey].exist;
     }
 
     /**
@@ -150,8 +179,8 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
 
         INounsSeeder.Seed memory seed = originalNounsToken.seeds(tokenId);
         uint256 seedKey = (uint256(seed.background) << 32) + (uint256(seed.body) << 24) + (uint256(seed.accessory) << 16) + (uint256(seed.head) << 8) + (uint256(seed.glasses));
-        // require(!existingSeeds[seedKey], "That seed has already been used");
-        existingSeeds[seedKey] = true;
+        // require(!existingSeedWithGenerations[seedKey].exist, "That seed has already been used");
+        existingSeedWithGenerations[seedKey] = SeedExistingAndGeneration(true, 0); // Always Gen 0
 
         return _mintTo(_msgSender(), tokenId, seed);
     }
@@ -167,9 +196,11 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
         uint48 glasses
     ) public payable override returns (uint256) {
         require(price <= msg.value, "Ether value sent is not correct");
+        require(_currentNounId < currentGenerationNounIdLimit, "Can't mint any more");
+        require(background >= 2, "Invalid background");
         uint256 seedKey = (uint256(background) << 32) + (uint256(body) << 24) + (uint256(accessory) << 16) + (uint256(head) << 8) + (uint256(glasses));
-        require(!existingSeeds[seedKey], "That seed has already been used");
-        existingSeeds[seedKey] = true;
+        require(!existingSeedWithGenerations[seedKey].exist, "That seed has already been used");
+        existingSeedWithGenerations[seedKey] = SeedExistingAndGeneration(true, currentGeneration);
 
         INounsSeeder.Seed memory seed = INounsSeeder.Seed(
             background,
@@ -195,7 +226,7 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
      */
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         require(_exists(tokenId), 'NounsToken: URI query for nonexistent token');
-        return descriptor.tokenURI(tokenId, seeds[tokenId]);
+        return descriptor.tokenURI(tokenId, seeds[tokenId], getGeneration(tokenId));
     }
 
     /**
@@ -204,7 +235,7 @@ contract NounsToken is INounsToken, Ownable, ERC721Checkpointable {
      */
     function dataURI(uint256 tokenId) public view override returns (string memory) {
         require(_exists(tokenId), 'NounsToken: URI query for nonexistent token');
-        return descriptor.dataURI(tokenId, seeds[tokenId]);
+        return descriptor.dataURI(tokenId, seeds[tokenId], getGeneration(tokenId));
     }
 
     /**

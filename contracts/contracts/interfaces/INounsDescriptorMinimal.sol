@@ -24,9 +24,9 @@ interface INounsDescriptorMinimal {
     /// USED BY TOKEN
     ///
 
-    function tokenURI(uint256 tokenId, INounsSeeder.Seed memory seed) external view returns (string memory);
+    function tokenURI(uint256 tokenId, INounsSeeder.Seed memory seed, uint128 generation) external view returns (string memory);
 
-    function dataURI(uint256 tokenId, INounsSeeder.Seed memory seed) external view returns (string memory);
+    function dataURI(uint256 tokenId, INounsSeeder.Seed memory seed, uint128 generation) external view returns (string memory);
 
     ///
     /// USED BY SEEDER

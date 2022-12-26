@@ -30,7 +30,7 @@ library NFTDescriptorV2 {
     /**
      * @notice Construct an ERC721 token URI.
      */
-    function constructTokenURI(ISVGRenderer renderer, TokenURIParams memory params)
+    function constructTokenURI(ISVGRenderer renderer, TokenURIParams memory params, bool isOriginal, string memory generation)
         public
         view
         returns (string memory)
@@ -41,11 +41,16 @@ library NFTDescriptorV2 {
         );
 
         // prettier-ignore
-        return string(
-            abi.encodePacked(
-                'data:application/json,',
-                '%7B%22name%22%3A%22', params.name, '%22%2C%20%22description%22%3A%22', params.description, '%22%2C%20%22image%22%3A%20%22', 'data%3Aimage%2Fsvg%2Bxml%2C', image, '%22%7D'
-            )
+        return string.concat(
+            'data:application/json,',
+            '%7B%22name%22%3A%22', params.name,
+            '%22%2C%20%22description%22%3A%22', params.description,
+            '%22%2C%20%22image%22%3A%20%22', 'data%3Aimage%2Fsvg%2Bxml%2C', image,
+            '%22%2C%22attributes%22%3A%5B%7B%22trait_type%22%3A%22Type%22%2C%22value%22%3A%22',
+            isOriginal ? 'Original' : 'Random',
+            '%22%7D%2C%7B%22display_type%22%3A%22number%22%2C%22trait_type%22%3A%22Generation%22%2C%22value%22%3A',
+            generation,
+            '%7D%5D%7D'
         );
     }
 

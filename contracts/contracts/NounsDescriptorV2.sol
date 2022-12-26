@@ -28,6 +28,7 @@ import { IInflator } from './interfaces/IInflator.sol';
 
 contract NounsDescriptorV2 is INounsDescriptorV2, Ownable {
     using Strings for uint256;
+    using Strings for uint128;
 
     // prettier-ignore
     // https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt
@@ -398,22 +399,21 @@ contract NounsDescriptorV2 is INounsDescriptorV2, Ownable {
      * @notice Given a token ID and seed, construct a token URI for an official Nouns DAO noun.
      * @dev The returned value may be a base64 encoded data URI or an API URL.
      */
-    function tokenURI(uint256 tokenId, INounsSeeder.Seed memory seed) external view override returns (string memory) {
+    function tokenURI(uint256 tokenId, INounsSeeder.Seed memory seed, uint128 generation) external view override returns (string memory) {
         if (isDataURIEnabled) {
-            return dataURI(tokenId, seed);
+            return dataURI(tokenId, seed, generation);
         }
-        return string(abi.encodePacked(baseURI, tokenId.toString()));
+        return string.concat(baseURI, tokenId.toString());
     }
 
     /**
      * @notice Given a token ID and seed, construct a base64 encoded data URI for an official Nouns DAO noun.
      */
-    function dataURI(uint256 tokenId, INounsSeeder.Seed memory seed) public view override returns (string memory) {
+    function dataURI(uint256 tokenId, INounsSeeder.Seed memory seed, uint128 generation) public view override returns (string memory) {
         string memory nounId = tokenId.toString();
-        string memory name = string(abi.encodePacked('VeryLongNoun%20', nounId));
-        string memory description = string(abi.encodePacked('VeryLongNoun%20', nounId, '%20is%20a%20member%20of%20the%20Nouns%20DAO'));
-
-        return genericDataURI(name, description, seed);
+        string memory name = string.concat('VeryLongNoun%20', nounId);
+        string memory description = string.concat('VeryLongNoun%20', nounId, '%20is%20a%20member%20of%20the%20Nouns%20DAO');
+        return genericDataURI(name, description, seed, generation);
     }
 
     /**
@@ -422,7 +422,8 @@ contract NounsDescriptorV2 is INounsDescriptorV2, Ownable {
     function genericDataURI(
         string memory name,
         string memory description,
-        INounsSeeder.Seed memory seed
+        INounsSeeder.Seed memory seed,
+        uint128 generation
     ) public view override returns (string memory) {
         NFTDescriptorV2.TokenURIParams memory params = NFTDescriptorV2.TokenURIParams({
             name: name,
@@ -430,7 +431,8 @@ contract NounsDescriptorV2 is INounsDescriptorV2, Ownable {
             parts: getPartsForSeed(seed),
             background: art.backgrounds(seed.background)
         });
-        return NFTDescriptorV2.constructTokenURI(renderer, params);
+        bool isOriginal = seed.background < 2;
+        return NFTDescriptorV2.constructTokenURI(renderer, params, isOriginal, generation.toString());
     }
 
     /**
