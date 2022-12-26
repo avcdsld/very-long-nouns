@@ -16,7 +16,7 @@
  * ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ *
  *********************************/
 
-pragma solidity ^0.8.6;
+pragma solidity ^0.8.17;
 
 library MultiPartRLEToSVG {
     struct SVGParams {
@@ -51,13 +51,11 @@ library MultiPartRLEToSVG {
         returns (string memory svg)
     {
         // prettier-ignore
-        return string(
-            abi.encodePacked(
-                '%253Csvg%2520width%253D%2522640%2522%2520height%253D%2522640%2522%2520viewBox%253D%25220%25200%2520640%2520640%2522%2520xmlns%253D%2522http%253A%252F%252Fwww.w3.org%252F2000%252Fsvg%2522%2520shape-rendering%253D%2522crispEdges%2522%253E',
-                '%253Crect%2520width%253D%2522100%2525%2522%2520height%253D%2522100%2525%2522%2520fill%253D%2522%2523', params.background, '%2522%2520%252F%253E',
-                _generateSVGRects(params, palettes),
-                '%253C%252Fsvg%253E'
-            )
+        return string.concat(
+            '%253Csvg%2520width%253D%2522640%2522%2520height%253D%2522640%2522%2520viewBox%253D%25220%25200%2520640%2520640%2522%2520xmlns%253D%2522http%253A%252F%252Fwww.w3.org%252F2000%252Fsvg%2522%2520shape-rendering%253D%2522crispEdges%2522%253E',
+            '%253Crect%2520width%253D%2522100%2525%2522%2520height%253D%2522100%2525%2522%2520fill%253D%2522%2523', params.background, '%2522%2520%252F%253E',
+            _generateSVGRects(params, palettes),
+            '%253C%252Fsvg%253E'
         );
     }
 
@@ -102,7 +100,7 @@ library MultiPartRLEToSVG {
                     cursor += 4;
 
                     if (cursor >= 16) {
-                        part = string(abi.encodePacked(part, _getChunk(cursor, buffer)));
+                        part = string.concat(part, _getChunk(cursor, buffer));
                         cursor = 0;
                     }
                 }
@@ -115,9 +113,9 @@ library MultiPartRLEToSVG {
             }
 
             if (cursor != 0) {
-                part = string(abi.encodePacked(part, _getChunk(cursor, buffer)));
+                part = string.concat(part, _getChunk(cursor, buffer));
             }
-            rects = string(abi.encodePacked(rects, part));
+            rects = string.concat(rects, part);
         }
         return rects;
     }
@@ -129,11 +127,9 @@ library MultiPartRLEToSVG {
     function _getChunk(uint256 cursor, string[16] memory buffer) private pure returns (string memory) {
         string memory chunk;
         for (uint256 i = 0; i < cursor; i += 4) {
-            chunk = string(
-                abi.encodePacked(
-                    chunk,
-                    '%253Crect%2520width%253D%2522', buffer[i], '%2522%2520height%253D%252210%2522%2520x%253D%2522', buffer[i + 1], '%2522%2520y%253D%2522', buffer[i + 2], '%2522%2520fill%253D%2522%2523', buffer[i + 3], '%2522%2520%252F%253E'
-                )
+            chunk = string.concat(
+                chunk,
+                '%253Crect%2520width%253D%2522', buffer[i], '%2522%2520height%253D%252210%2522%2520x%253D%2522', buffer[i + 1], '%2522%2520y%253D%2522', buffer[i + 2], '%2522%2520fill%253D%2522%2523', buffer[i + 3], '%2522%2520%252F%253E'
             );
         }
         return chunk;

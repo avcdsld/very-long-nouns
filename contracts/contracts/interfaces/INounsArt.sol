@@ -15,7 +15,7 @@
  * ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ *
  *********************************/
 
-pragma solidity ^0.8.6;
+pragma solidity ^0.8.17;
 
 import { Inflate } from '../libs/Inflate.sol';
 import { IInflator } from './IInflator.sol';

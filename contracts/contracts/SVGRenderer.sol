@@ -15,7 +15,7 @@
  * ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ *
  *********************************/
 
-pragma solidity ^0.8.6;
+pragma solidity ^0.8.17;
 
 import { ISVGRenderer } from './interfaces/ISVGRenderer.sol';
 
@@ -50,16 +50,14 @@ contract SVGRenderer is ISVGRenderer {
     function generateSVG(SVGParams calldata params) external pure override returns (string memory svg) {
         if (bytes(params.background).length != 0) {
             // prettier-ignore
-            return string(
-                abi.encodePacked(
-                    _SVG_START_TAG,
-                    '%253Crect%2520width%253D%2522100%2525%2522%2520height%253D%2522100%2525%2522%2520fill%253D%2522%2523', params.background, '%2522%2520%252F%253E',
-                    _generateSVGRects(params),
-                    _SVG_END_TAG
-                )
+            return string.concat(
+                _SVG_START_TAG,
+                '%253Crect%2520width%253D%2522100%2525%2522%2520height%253D%2522100%2525%2522%2520fill%253D%2522%2523', params.background, '%2522%2520%252F%253E',
+                _generateSVGRects(params),
+                _SVG_END_TAG
             );
         }
-        return string(abi.encodePacked(_SVG_START_TAG, _generateSVGRects(params), _SVG_END_TAG));
+        return string.concat(_SVG_START_TAG, _generateSVGRects(params), _SVG_END_TAG);
     }
 
     /**
@@ -126,7 +124,7 @@ contract SVGRenderer is ISVGRenderer {
                         cursor += 4;
 
                         if (cursor >= 16) {
-                            part = string(abi.encodePacked(part, _getChunk(cursor, buffer)));
+                            part = string.concat(part, _getChunk(cursor, buffer));
                             cursor = 0;
                         }
                     }
@@ -143,9 +141,9 @@ contract SVGRenderer is ISVGRenderer {
             }
 
             if (cursor != 0) {
-                part = string(abi.encodePacked(part, _getChunk(cursor, buffer)));
+                part = string.concat(part, _getChunk(cursor, buffer));
             }
-            rects = string(abi.encodePacked(rects, part));
+            rects = string.concat(rects, part);
         }
         return rects;
     }
@@ -170,11 +168,9 @@ contract SVGRenderer is ISVGRenderer {
     function _getChunk(uint256 cursor, string[16] memory buffer) private pure returns (string memory) {
         string memory chunk;
         for (uint256 i = 0; i < cursor; i += 4) {
-            chunk = string(
-                abi.encodePacked(
-                    chunk,
-                    '%253Crect%2520width%253D%2522', buffer[i], '%2522%2520height%253D%252210%2522%2520x%253D%2522', buffer[i + 1], '%2522%2520y%253D%2522', buffer[i + 2], '%2522%2520fill%253D%2522%2523', buffer[i + 3], '%2522%2520%252F%253E'
-                )
+            chunk = string.concat(
+                chunk,
+                '%253Crect%2520width%253D%2522', buffer[i], '%2522%2520height%253D%252210%2522%2520x%253D%2522', buffer[i + 1], '%2522%2520y%253D%2522', buffer[i + 2], '%2522%2520fill%253D%2522%2523', buffer[i + 3], '%2522%2520%252F%253E'
             );
         }
         return chunk;

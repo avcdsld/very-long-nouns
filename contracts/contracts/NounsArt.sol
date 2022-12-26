@@ -15,7 +15,7 @@
  * ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ *
  *********************************/
 
-pragma solidity ^0.8.6;
+pragma solidity ^0.8.17;
 
 import { INounsArt } from './interfaces/INounsArt.sol';
 import { SSTORE2 } from './libs/SSTORE2.sol';
