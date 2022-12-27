@@ -5,7 +5,12 @@ import ReactDOM from "react-dom";
 import Noun from "../../../components/Noun";
 import { svg2png } from "../../../utils/svg2png";
 import { Backdrop } from "../../../components/Modal";
-import { connect, mint } from "../../../utils/web3ModalUtil";
+import {
+  connect,
+  mint,
+  preMint,
+  mintForNounOwner,
+} from "../../../utils/web3ModalUtil";
 
 const downloadNounPNG = (png: string) => {
   const downloadEl = document.createElement("a");
@@ -44,11 +49,28 @@ const NounModal: React.FC<{
     };
   }, [svg]);
 
-  const mintNoun = async (seed: { [key: string]: number }, tokenId: number) => {
+  const mintNoun = async (seed: { [key: string]: number }) => {
     try {
       const web3Provider = await connect();
-      // TODO: check seed existing
-      await mint(web3Provider, seed, tokenId);
+      await mint(web3Provider, seed);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const preMintNoun = async (seed: { [key: string]: number }) => {
+    try {
+      const web3Provider = await connect();
+      await preMint(web3Provider, seed);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const mintNounForNounOwner = async (tokenId: number) => {
+    try {
+      const web3Provider = await connect();
+      await mintForNounOwner(web3Provider, tokenId);
     } catch (e) {
       console.log(e);
     }
@@ -85,14 +107,33 @@ const NounModal: React.FC<{
                 Download
               </Button>
             )}
-            {png && (
-              <Button
-                onClick={() => {
-                  mintNoun(seed, tokenId);
-                }}
-              >
-                Mint for 0.005 ETH
-              </Button>
+            {png && tokenId >= 0 ? (
+              <>
+                <Button
+                  onClick={() => {
+                    mintNounForNounOwner(tokenId);
+                  }}
+                >
+                  Mint for 0.005 ETH
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  onClick={() => {
+                    preMintNoun(seed);
+                  }}
+                >
+                  Pre Mint for 0.005 ETH
+                </Button>
+                <Button
+                  onClick={() => {
+                    mintNoun(seed);
+                  }}
+                >
+                  Mint for 0.005 ETH
+                </Button>
+              </>
             )}
           </div>
         </div>,

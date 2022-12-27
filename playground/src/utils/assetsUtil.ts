@@ -42,7 +42,7 @@ export const getNounData = (seed: NounSeed): NounData => {
  */
 export const getRandomNounSeed = (): NounSeed => {
     return {
-        background: Math.floor(Math.random() * bgcolors.length),
+        background: 2, // TODO: fix // Math.floor(Math.random() * bgcolors.length),
         body: Math.floor(Math.random() * bodies.length),
         accessory: Math.floor(Math.random() * accessories.length),
         head: Math.floor(Math.random() * heads.length),

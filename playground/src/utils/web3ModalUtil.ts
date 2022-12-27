@@ -2,6 +2,7 @@ import WalletConnectProvider from "@walletconnect/web3-provider";
 import { providers, Contract } from "ethers";
 import Web3Modal from "web3modal";
 import { NounSeed } from "./assetsUtil";
+import axios from 'axios';
 
 const INFURA_ID = "9f5ace8940244ed9a769e493d783fda8";
 
@@ -78,19 +79,40 @@ export const originalNftContractAbi = [
     "function seeds(uint256) view returns ((uint48 background, uint48 body, uint48 accessory, uint48 head, uint48 glasses) seed)"
 ];
 
-export const nftContractAddress = "0xB1E6C10Be0aF4BEB0b4191A1F4fA5b98bb492dd8"; // Goerli
+export const nftContractAddress = "0xacbd764FCd621592483196a7E61cCcb37e22043A"; // Goerli
 export const nftContractAbi = [
     "function priceForNounOwner() view returns (uint256)",
     "function price() view returns (uint256)",
     "function mintForNounOwner(uint256) payable returns (uint256)",
+    "function preMint(uint48,uint48,uint48,uint48,uint48,address,uint256,bytes) payable returns (uint256)",
     "function mint(uint48,uint48,uint48,uint48,uint48) payable returns (uint256)",
     "function isMintedSeed(uint48,uint48,uint48,uint48,uint48) view returns (bool)",
     "function exists(uint256) view returns (bool)",
+    "function isPublicMintPaused() view returns (bool)",
 ];
 
-export const mint = async (
-    provider: providers.Web3Provider,
+export const checkExisting = async (
+    nftContract: Contract,
     seed: { [key: string]: number },
+): Promise<boolean> => {
+    const isMinted = await nftContract.isMintedSeed(
+        seed.background,
+        seed.body,
+        seed.accessory,
+        seed.head,
+        seed.glasses
+    );
+    console.log({ isMinted });
+    if (isMinted) {
+        alert(
+            "This Noun has already been minted. Please use another combination."
+        );
+    }
+    return isMinted;
+}
+
+export const mintForNounOwner = async (
+    provider: providers.Web3Provider,
     tokenId: number,
 ) => {
     const nftContract = new Contract(
@@ -98,51 +120,101 @@ export const mint = async (
         nftContractAbi,
         provider.getSigner()
     );
-
-    if (tokenId >= 0) {
-        const exists = await nftContract.exists(tokenId);
-        console.log({ exists });
-        if (exists) {
-            alert(
-                "This Noun has already been minted. Please use another combination."
-            );
-            return;
-        }
-
-        const value = nftContract.priceForNounOwner();
-        await nftContract.mintForNounOwner(tokenId, { value });
+    const exists = await nftContract.exists(tokenId);
+    console.log({ exists });
+    if (exists) {
         alert(
-            "Transaction has been sent. Please check your OpenSea account page after a while."
+            "This Noun has already been minted. Please use another combination."
         );
-    } else {
-        const isMinted = await nftContract.isMintedSeed(
-            seed.background,
-            seed.body,
-            seed.accessory,
-            seed.head,
-            seed.glasses
-        );
-        console.log({ isMinted });
-        if (isMinted) {
-            alert(
-                "This Noun has already been minted. Please use another combination."
-            );
-            return;
-        }
-
-        const value = nftContract.price();
-        await nftContract.mint(
-            seed.background,
-            seed.body,
-            seed.accessory,
-            seed.head,
-            seed.glasses,
-            { value },
-        );
-        alert(
-            "Transaction has been sent. Please check your OpenSea account page after a while."
-        );
+        return;
     }
+
+    const value = nftContract.priceForNounOwner();
+    await nftContract.mintForNounOwner(tokenId, { value });
+    alert(
+        "Transaction has been sent. Please check your OpenSea account page after a while."
+    );
+}
+
+export const mint = async (
+    provider: providers.Web3Provider,
+    seed: { [key: string]: number },
+) => {
+    const nftContract = new Contract(
+        nftContractAddress,
+        nftContractAbi,
+        provider.getSigner()
+    );
+
+    const isPublicMintPaused = await nftContract.isPublicMintPaused();
+    if (isPublicMintPaused) {
+        alert(
+            "Public Minting has not yet started. Look forward to it!"
+        );
+        return;
+    }
+
+    const existing = await checkExisting(nftContract, seed);
+    if (existing) {
+        return;
+    }
+
+    const value = nftContract.price();
+    await nftContract.mint(
+        seed.background,
+        seed.body,
+        seed.accessory,
+        seed.head,
+        seed.glasses,
+        { value },
+    );
+    alert(
+        "Transaction has been sent. Please check your OpenSea account page after a while."
+    );
+};
+
+export const getPreMintSig = async (to: string): Promise<{ expiredAt: number, signature: string, allowed: boolean }> => {
+    const apiUrl = `https://us-central1-very-long-nouns.cloudfunctions.net/api/signForPreMint?addr=${to.toLowerCase()}`;
+    const res = await axios.get(apiUrl);
+    return res.data;
+}
+
+export const preMint = async (
+    provider: providers.Web3Provider,
+    seed: { [key: string]: number },
+) => {
+    const nftContract = new Contract(
+        nftContractAddress,
+        nftContractAbi,
+        provider.getSigner()
+    );
+
+    const existing = await checkExisting(nftContract, seed);
+    if (existing) {
+        return;
+    }
+
+    const to = await (provider.getSigner()).getAddress();
+    const { expiredAt, signature, allowed } = await getPreMintSig(to);
+    if (!allowed) {
+        alert('Sorry, you are not eligible for Pre Minting.');
+        return;
+    }
+    const value = nftContract.price();
+    await nftContract.preMint(
+        seed.background,
+        seed.body,
+        seed.accessory,
+        seed.head,
+        seed.glasses,
+        to,
+        expiredAt,
+        signature,
+        { value },
+    );
+    alert(
+        "Transaction has been sent. Please check your OpenSea account page after a while."
+    );
 };
 
 export const getOwnNounsSeedsInfo = async (
